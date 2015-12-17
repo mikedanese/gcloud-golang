@@ -28,8 +28,9 @@ import (
 )
 
 const (
-	envProjID     = "GCLOUD_TESTS_GOLANG_PROJECT_ID"
-	envPrivateKey = "GCLOUD_TESTS_GOLANG_KEY"
+	envProjID                = "GCLOUD_TESTS_GOLANG_PROJECT_ID"
+	envPrivateKey            = "GCLOUD_TESTS_GOLANG_KEY"
+	envUseDefaultCredentials = "GCLOUD_TESTS_GOLANG_DEFAULT_CREDENTIALS"
 )
 
 func ProjID() string {
@@ -41,6 +42,13 @@ func ProjID() string {
 }
 
 func TokenSource(ctx context.Context, scopes ...string) oauth2.TokenSource {
+	if os.Getenv(envUseDefaultCredentials) != "" {
+		ts, err := google.DefaultTokenSource(ctx, scopes...)
+		if err != nil {
+			log.Fatalf("Cannot error retrieving default token source, err: %v", err)
+		}
+		return ts
+	}
 	key := os.Getenv(envPrivateKey)
 	if key == "" {
 		log.Fatal(envPrivateKey + " must be set. See CONTRIBUTING.md for details.")
